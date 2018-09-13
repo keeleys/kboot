@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.sitec.kboot.model.mapper.UserMapper">
+    <resultMap id="User" type="cc.sitec.kboot.model.pojo.User">
+        <id property="id" column="id"/>
+        <result property="account" column="account"/>
+        <result property="password" column="password"/>
+        <result property="enable" column="enable"/>
+        <result property="tel" column="tel"/>
+        <result property="userName" column="user_name"/>
+        <result property="avatar" column="avatar"/>
+
+        <collection property="roles" ofType="cc.sitec.kboot.model.pojo.Role">
+            <id property="id" column="role_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="roleKey" column="role_key"/>
+            <result property="enable" column="role_enable"/>
+        </collection>
+    </resultMap>
+
+    <select id="list" resultMap="User">
+        select
+            kboot_user.*,
+            v.role_id,
+            vr.role_name,
+            vr.role_key,
+            vr.enable as role_enable
+        from kboot_user
+            left join kboot_user_role v on kboot_user.id = v.user_id
+            left join kboot_role vr on v.role_id = vr.id
+        order by kboot_user.id desc
+    </select>
+
+    <update id="updateEnable">
+        update kboot_user
+        set enable = #{enable}
+        where id = #{id};
+    </update>
+
+    <update id="update">
+        update kboot_user
+        <set>
+            <if test="enable != null">
+                `enable` = #{enable},
+            </if>
+            <if test="tel != null">
+                `tel` = #{tel},
+            </if>
+            <if test="userName != null">
+                `user_name` = #{userName},
+            </if>
+            <if test="avatar != null">
+                `avatar` = #{avatar},
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO kboot_user (`enable`, `user_name`, `account`, `password`, `tel`)
+        VALUES (#{enable}, #{userName}, #{account}, #{password}, #{tel});
+    </insert>
+
+    <delete id="deleteById">
+        delete from kboot_user
+        where id = #{id};
+    </delete>
+
+    <select id="getById" resultMap="User">
+        select
+            kboot_user.*,
+            v.role_id,
+            vr.role_name,
+            vr.role_key,
+            vr.enable as role_enable
+        from kboot_user
+            left join kboot_user_role v on kboot_user.id = v.user_id
+            left join kboot_role vr on v.role_id = vr.id
+        where kboot_user.id = #{id};
+    </select>
+
+    <delete id="removeRelation">
+        delete from kboot_user_role
+        where user_id = #{id};
+    </delete>
+
+    <insert id="createRelation">
+        insert into kboot_user_role (user_id, role_id) values
+        <foreach collection="list" item="rl" index="index" separator=",">
+            (#{rl.user_id}, #{rl.role_id})
+        </foreach>
+    </insert>
+
+    <update id="updatePassword">
+        update kboot_user
+        set password = #{newPassword}
+        where id = #{userId};
+    </update>
+
+    <select id="getUserByAccount" resultMap="User">
+        select
+            kboot_user.*,
+            v.role_id,
+            vr.role_name,
+            vr.role_key,
+            vr.enable as role_enable
+        from kboot_user
+            left join kboot_user_role v on kboot_user.id = v.user_id
+            left join kboot_role vr on v.role_id = vr.id
+        where kboot_user.account = #{account} and kboot_user.enable = 1;
+    </select>
+</mapper>

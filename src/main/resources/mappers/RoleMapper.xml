@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.sitec.kboot.model.mapper.RoleMapper">
+    <resultMap id="Role" type="cc.sitec.kboot.model.pojo.Role">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleKey" column="role_key"/>
+        <result property="enable" column="enable"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <select id="list" resultMap="Role">
+        SELECT t.*
+        FROM kboot_role t
+        order by id desc
+    </select>
+
+    <update id="updateEnable">
+        update kboot_role
+        set enable = #{enable}
+        where id = #{id};
+    </update>
+
+    <update id="update">
+        update kboot_role
+        <set>
+            <if test="enable != null">
+                `enable` = #{enable},
+            </if>
+            <if test="roleName != null">
+                `role_name` = #{roleName},
+            </if>
+            <if test="roleKey != null">
+                `role_key` = #{roleKey},
+            </if>
+            <if test="description != null">
+                `description` = #{description},
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+    <insert id="insert">
+        INSERT INTO kboot_role (`enable`, `role_name`, `role_key`, `description`)
+        VALUES (#{enable}, #{roleName}, #{roleKey}, #{description});
+    </insert>
+
+    <delete id="deleteById">
+        delete from kboot_role
+        where id = #{id};
+    </delete>
+
+    <select id="getById" resultMap="Role">
+        select *
+        from kboot_role
+        where id = #{id};
+    </select>
+
+    <select id="getRoleListByEnable" resultMap="Role">
+        select *
+        from kboot_role
+        where `enable` = #{enable}
+        order by id desc;
+    </select>
+
+    <delete id="removeRelation">
+        delete from kboot_role_permission
+        where role_id = #{id};
+    </delete>
+
+    <insert id="createRelation">
+        insert into kboot_role_permission (permission_id, role_id) values
+        <foreach collection="list" item="rl" index="index" separator=",">
+            (#{rl.permission_id}, #{rl.role_id})
+        </foreach>
+    </insert>
+</mapper>
